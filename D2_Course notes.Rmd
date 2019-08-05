@@ -1,0 +1,156 @@
+---
+title: 'Course notes: Day 2'
+output:
+  html_document:
+    df_print: paged
+    toc: true
+    toc_depth: 4
+    toc_float: true
+    collapse : false
+---
+
+# Functions
+
+## Create custom functions {.tabset}
+
+Let's create a function that feeds an arbitrary number of dataframes with a given dataset. The two arguments will be:
+
+- *data*, the input data;
+
+- *times*, the number of assignments that are to be done (with a default of 5).
+
+As R loads every assignment in memory, say we also want to include some safeguard such that the function generates a warning if one tries to assign the dataset more than 9 times and doesn't execute at all if more than 99 times. This can be done including the functions `warning()` and `stop()` within an if statement.
+
+```{r, echo=T, results='hide',message=FALSE}
+install.packages("pacman",repos = "http://cran.us.r-project.org")
+pacman::p_load("here","tidyverse","readr","lubridate")
+load("Data/ncbikecrash.Rdata") 
+```
+
+
+```{r}
+# create an empty list
+dupDF <- function(data,times=5){ # default value for times is 5
+list.loop <- list() # create an empty list that will store the outputs
+if(times>=10){
+  if(times>=100){
+    stop("Can't duplicate that many times")
+  } else warning("Check you haven't screwed your machine's memory")
+} else{
+  for (i in 1:times){
+     list.loop[[i]] = data
+     names(list.loop)[i] <- paste("df_",i)
+    }
+    return(list.loop)
+  }
+
+}
+```
+
+## Store and re-use custom functions
+
+Now that we've created `dupDF()`, let's save its script to a new `.R` file in a folder of the project called "Functions". The custom function can then be loaded and used from any other script by specifying its path as argument of the `source()` function.
+
+```{r, message=F}
+source(here::here("Functions","dupDF.R"))
+```
+Also, as for other functions of the tidyverse, `x %>% f(y)` is equivalent to `f(x,y)`, with x being the argument *data* and y the argument *times*. In other words, the data argument can be passed as follows:
+```{r}
+ncbikecrash %>%
+  filter(region=="Piedmont") %>%
+  distinct(region,city) %>%
+  dupDF(10)
+```
+
+# Data formatting {.tabset}
+
+```{r loadingData, message=FALSE}
+apps_ratings <- read_csv(here::here("Data","googleplaystore.csv"))
+user_reviews <- read_csv(here::here("Data","googleplaystore_user_reviews.csv"))
+```
+
+After loading the Google Play Store Apps, there are several operations Radia undertakes to make the dataset ready for analysis.
+
+## Clean numbers
+
+An issue is that the variable Size has values expressed in thousands (k) and in millions (M). We have to remove the k and M symbols and express everything in the same unit. Let's also remove the dollar sign in Price. The variable Install should also be cleaned from its end "+" and the commas it contains. Finally, we use `as.numeric()` to make sure our cleaned variables are doubles.
+```{r, warning=FALSE}
+apps_ratings_clean <- apps_ratings %>%
+  filter(grepl("M", Size) | grepl("k", Size) ) %>%
+  mutate(
+    Size_cleaned = ifelse(grepl("M", Size),as.numeric(gsub("M", "",Size))*1000000,Size),
+    Size_cleaned = ifelse(grepl("k", Size_cleaned),as.numeric(gsub("k", "",Size))*1000,Size_cleaned),
+    Size_cleaned = as.numeric(Size_cleaned),
+    Price_cleaned = as.numeric(gsub("\\$", "", as.character(Price))),
+    Installs_cleaned = gsub("\\+", "", as.character(Installs)), # replace the end "+" by ""
+    Installs_cleaned = as.numeric(gsub(",", "", Installs_cleaned)),
+    Rating = as.numeric(Rating)
+  )  %>%
+  select(Size,Size_cleaned,Installs,Installs_cleaned, Price, Price_cleaned,`Last Updated`,Rating,Category,Type,App,Reviews)
+
+options(scipen=999) ##Remove scientific notation
+
+apps_ratings_clean %>% select(Size,Size_cleaned,Installs,Installs_cleaned, Price, Price_cleaned)
+```
+
+## Clean dates
+
+The first step here is to convert the string variable `Last Updated` into a date format that R can understand.
+
+```{r}
+apps_ratings_clean <- apps_ratings_clean %>%
+mutate(
+    LastUpdated = as.POSIXct(apps_ratings_clean$`Last Updated`,format = "%d-%b-%y",tz=Sys.timezone())
+)
+
+apps_ratings_clean %>% select(`Last Updated`,LastUpdated)
+```
+
+From then on we can for example use functions from the lubridate package to play with the date's components. 
+
+```{r, warning=FALSE}
+apps_ratings_clean %>%
+  mutate(
+    year = lubridate::year(LastUpdated),
+    month = lubridate::month(LastUpdated),
+    yearQ = lubridate::yq(LastUpdated)
+  ) %>%
+  select(LastUpdated,year,month)
+```
+
+
+## Remove duplicates
+In base R:
+```{r}
+apps_ratings_clean=apps_ratings_clean[!duplicated(apps_ratings_clean), ]
+```
+Using the tidyverse:
+```{r}
+apps_ratings_clean <- apps_ratings_clean %>% filter(!duplicated(apps_ratings_clean))
+```
+
+# Data viz with ggplot2
+
+The first step is to specify the data and the axis, this is what's done in `ggplot(data= cars, aes(x = speed ,y= dist))`. Then you can add `geoms` to your visualization. `Geoms` behave like layers that you add to your graph. Labels can also be
+```{r}
+ggplot(data= cars, aes(x = speed ,y= dist)) +
+  geom_point()
+```
+
+```{r, message=F}
+ggplot(data= cars, aes(x = speed ,y= dist)) +
+  geom_point() +
+  geom_smooth()
+```
+```{r, message=F}
+ggplot(data= cars, aes(x = speed ,y= dist)) +
+  geom_point() +
+  geom_smooth() +
+  labs(title="What a nice relation!") +
+  xlab("Car speed (km/h)") +
+  ylab("Distance (km)")
+```
+
+*to be continued...*
+
+
