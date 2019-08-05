@@ -175,7 +175,7 @@ stocks %>%
 ## Dataset exploration {.tabset}
 
 ```{r}
-load(here("Data","ncbikecrash.Rdata")) 
+load(here::here("Data","ncbikecrash.Rdata")) 
 ```
 
 Nice functions to explore a tibble are:
