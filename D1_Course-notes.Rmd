@@ -52,7 +52,7 @@ DT::datatable(tabledata, options = list(pageLength = 5))
 
 **data types** VS **data structures**
 
-### Objects classes {.tabset}
+### Objects classes (data structures) {.tabset}
 
 An **atomic vector** can only be composed of elements of the same data type. A **dataframe** can only contain atomic vectors of the same length. A **list** can contain anything. **Tibbles** then are the didyverse version of dataframes (they share a lot of properties).
 
@@ -100,7 +100,7 @@ rownames(df) # returns the id values
 See a dataframe as a combination of observations i and columns j such that df[i,j].
 
 #### Tibbles
-Tibbles are the tidyverse dataframes. The way they should be subseted is the same. We can use the function `as_tibble()` to convert a dataframe into a tibble.
+Tibbles are the tidyverse dataframes. The way they should be subseted is the same. We can use the function `as_tibble()` to convert a dataframe into a tibble. A nice function to get an overview of a tibble's content is `glimpse()`.
 
 ```{r}
 (as_tibble(df)) # converts df in a tibble
@@ -137,9 +137,11 @@ each variable is a column, each observation is a row, and each type of observati
 
 ### gather()
 
-The option `gather()` makes it easy to convert datasets from a wide to a long format:
+The option `gather()` makes it easy to convert datasets from a wide to a long format.
 
 `gather(<data>, <original columns names> ,key = <New column name>, value = <name of variable containing values>)`
+
+Example:
 ```{r}
 knitr::kable(table4a)
 table4a %>% 
@@ -175,7 +177,7 @@ stocks %>%
 ## Dataset exploration {.tabset}
 
 ```{r}
-load(here::here("Data","ncbikecrash.Rdata")) 
+load(here("Data","ncbikecrash.Rdata")) 
 ```
 
 Nice functions to explore a tibble are:

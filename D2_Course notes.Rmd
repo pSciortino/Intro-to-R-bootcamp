@@ -35,7 +35,7 @@ list.loop <- list() # create an empty list that will store the outputs
 if(times>=10){
   if(times>=100){
     stop("Can't duplicate that many times")
-  } else warning("Check you haven't screwed your machine's memory")
+  } else warning("Check you haven't screwed up your machine's memory")
 } else{
   for (i in 1:times){
      list.loop[[i]] = data
@@ -54,7 +54,7 @@ Now that we've created `dupDF()`, let's save its script to a new `.R` file in a 
 ```{r, message=F}
 source(here::here("Functions","dupDF.R"))
 ```
-Also, as for other functions of the tidyverse, `x %>% f(y)` is equivalent to `f(x,y)`, with x being the argument *data* and y the argument *times*. In other words, the data argument can be passed as follows:
+As for other functions of the tidyverse, `x %>% f(y)` is equivalent to `f(x,y)`, with x being the argument *data* and y the argument *times*. In other words, the data argument can be passed as follows:
 ```{r}
 ncbikecrash %>%
   filter(region=="Piedmont") %>%
@@ -69,7 +69,7 @@ apps_ratings <- read_csv(here::here("Data","googleplaystore.csv"))
 user_reviews <- read_csv(here::here("Data","googleplaystore_user_reviews.csv"))
 ```
 
-After loading the Google Play Store Apps, there are several operations Radia undertakes to make the dataset ready for analysis.
+After loading the Google Play Store Apps, there are several operations Radia undertakes to make the dataset ready for analysis. 
 
 ## Clean numbers
 
